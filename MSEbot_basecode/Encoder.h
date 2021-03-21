@@ -135,7 +135,7 @@ void IRAM_ATTR ENC_isrLeftA()
   
   if(ENC_btLeftMotorRunningFlag)
   {
-    if(ENC_vi32LeftOdometer == ENC_vi32LeftOdometerCompare || (LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55))
+    if(ENC_vi32LeftOdometer == ENC_vi32LeftOdometerCompare)
     {
       
       ENC_btLeftMotorRunningFlag = false;
@@ -149,10 +149,7 @@ void IRAM_ATTR ENC_isrLeftA()
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor 
       
-      if(LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55)
-      {
-        beaconFound();
-      }
+
     }
     
   }
@@ -192,7 +189,7 @@ void IRAM_ATTR ENC_isrLeftB()
   }
   if(ENC_btLeftMotorRunningFlag)
   {
-    if(ENC_vi32LeftOdometer == ENC_vi32LeftOdometerCompare || (LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55))
+    if(ENC_vi32LeftOdometer == ENC_vi32LeftOdometerCompare)
     {
       
         ENC_btLeftMotorRunningFlag = false;
@@ -205,10 +202,7 @@ void IRAM_ATTR ENC_isrLeftB()
       ledcWrite(1,255);  //stop with braking Left motor 
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor 
-      if(LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55)
-      {
-        beaconFound();
-      }
+
     }
     
   }
@@ -247,7 +241,7 @@ void IRAM_ATTR ENC_isrRightA()
   }
   if(ENC_btRightMotorRunningFlag)
   {
-    if(ENC_vi32RightOdometer == ENC_vi32RightOdometerCompare || (LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55))
+    if(ENC_vi32RightOdometer == ENC_vi32RightOdometerCompare)
     {
       
       ENC_btLeftMotorRunningFlag = false;
@@ -261,10 +255,7 @@ void IRAM_ATTR ENC_isrRightA()
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor 
       
-      if(LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55)
-      {
-        beaconFound();
-      }
+
     }
     
   }
@@ -305,7 +296,7 @@ void IRAM_ATTR ENC_isrRightB()
   if(ENC_btRightMotorRunningFlag)
   {
     
-    if(ENC_vi32RightOdometer == ENC_vi32RightOdometerCompare || (LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55))
+    if(ENC_vi32RightOdometer == ENC_vi32RightOdometerCompare)
     {
       
       ENC_btLeftMotorRunningFlag = false;
@@ -319,10 +310,7 @@ void IRAM_ATTR ENC_isrRightB()
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor  
       
-      if(LOC_btLookingForBeaconFlag && CR1_ui8IRDatum == 0x55)
-      {
-        beaconFound();
-      }
+
     }
     
   }

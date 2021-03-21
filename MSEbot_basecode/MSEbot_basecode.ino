@@ -67,8 +67,6 @@ int CR1_in8FlagCounter = 0;
 volatile uint32_t vui32test1;
 volatile uint32_t vui32test2;
 
-volatile boolean LOC_btLookingForBeaconFlag = false; //active when robot loses beacon, and is trying to locate it
-volatile boolean LOC_btTrackingBeacon = false; //active whenever the robot is driving towards the beacon
 volatile boolean ENC_FirstHalt = true;
 
 const uint8_t ci8RightTurn = 27;
@@ -86,17 +84,17 @@ int CR1_inPot2Value;
 
 #include "definitions.h"
 #include "0_Core_Zero.h"
-
+  
+#include <ESP32Servo.h>
 #include <esp_task_wdt.h>
 
 #include <Adafruit_NeoPixel.h>
 #include <Math.h>
-#include "motion.h";
+#include "motion.h"
 #include "MyWEBserver.h"
 #include "BreakPoint.h"
-#include "WDT.h";
-#include "locator.h"
-#include "stepper.h"
+#include "WDT.h"
+
 
 void loopWEBServerButtonresponce(void);
 
@@ -143,6 +141,8 @@ boolean btToggle = true;
 int iButtonState;
 int iLastButtonState = HIGH;
 
+#include "stepper.h"
+
 // Declare our SK6812 SMART LED object:
 Adafruit_NeoPixel SmartLEDs(2, 25, NEO_GRB + NEO_KHZ400);
 // Argument 1 = Number of LEDs (pixels) in use
@@ -177,6 +177,7 @@ void setup() {
    WDT_ResetCore1(); 
 
    setupMotion();
+   setupStepper();
    pinMode(ciHeartbeatLED, OUTPUT);
    pinMode(ciPB1, INPUT_PULLUP);
    pinMode(ciLimitSwitch, INPUT_PULLUP);
@@ -185,9 +186,7 @@ void setup() {
    SmartLEDs.clear();                          // Set all pixel colours to off
    SmartLEDs.show();                           // Send the updated pixel colours to the hardware
 
-  ledcAttachPin(ciServoPin, ciServoChannel);     // Assign servo pin to servo channel
-  ledcSetup(ciServoChannel, 50, 16);           // setup for channel for 50 Hz, 16-bit 
-
+  
 
 }
 
@@ -217,13 +216,11 @@ void loop()
        // if stopping, reset motor states and stop motors
        if(!btRun)
        {
-          btFlag = 0;
-          LOC_btLookingForBeaconFlag = false;
           ENC_btLeftMotorRunningFlag = false;
           ENC_btRightMotorRunningFlag = false;
-          LOC_btTrackingBeacon = false;
           CR1_in8FlagCounter = 0;
           ucFlagStateIndex = 0;
+          ucNextMotorStateIndex = 1;
           ucMotorStateIndex = 0; 
           ucMotorState = 0;
           move(0);
@@ -234,18 +231,15 @@ void loop()
  }
  iLastButtonState = iButtonValue;             // store button state
 
- if(!digitalRead(ciLimitSwitch) || CR1_ui8IRDatum == 0x41)
+ if(!digitalRead(ciLimitSwitch))
  {
-  LOC_btLookingForBeaconFlag = false;
   ENC_btLeftMotorRunningFlag = false;
   ENC_btRightMotorRunningFlag = false;
-  LOC_btTrackingBeacon = false;
   btRun = 0; //if limit switch is pressed stop bot
-  btFlag = 0;
   ucMotorStateIndex = 7;
   ucMotorState = 0;
   move(0);
-  btRun = 1;
+
  }
  
  if (Serial2.available() > 0) {               // check for incoming data
@@ -295,13 +289,19 @@ void loop()
             ENC_SetDistance(200, 200);
             CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
             CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
+
+            
             
             ucMotorStateIndex = 0;
-            ucNextMotorStateIndex = 2;      
+            ucNextMotorStateIndex = 1;  
+
+            incrementStepper();
+                
             break;
           }
            case 2:
           {
+            
 
             ENC_SetDistance(ci8RightTurn,-(ci8RightTurn));
             CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
@@ -315,13 +315,10 @@ void loop()
           case 3:
           {
 
-            ucMotorState = 1;  //reverse
-            ENC_SetDistance(150, 150);
-            CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
-            CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
+//Code for climbing
 
             ucMotorStateIndex = 0;
-            ucNextMotorStateIndex = 4;
+            ucNextMotorStateIndex = 3;
             break;
           }
            case 4:
@@ -382,7 +379,7 @@ void loop()
           }
           case 9:
           {
-            FlagWave();
+
             ucMotorState = 0;
             move(0); // used to be 0
             
@@ -411,7 +408,7 @@ void loop()
           }
           case 12:
           {
-            trackBeacon();
+
           }
          }
         }
@@ -447,15 +444,7 @@ void loop()
         // asm volatile("esync; rsr %0,ccount":"=a" (vui32test1)); // @ 240mHz clock each tick is ~4nS 
      
    //   asm volatile("esync; rsr %0,ccount":"=a" (vui32test2)); // @ 240mHz clock each tick is ~4nS 
-      if(CR1_ui8IRDatum == 0x41)
-      {
-        LOC_btTrackingBeacon = false;
-      }
-   
-      if(LOC_btTrackingBeacon && !LOC_btLookingForBeaconFlag && CR1_ui8IRDatum != 0x55)//tracking code if the beacon is supposed to be in view but isn't
-      {
-        findBeacon();
-      }
+      
      
       CR1_ucMainTimerCaseCore1 = 4;
       break;
@@ -509,54 +498,54 @@ void loop()
     //###############################################################################
     case 8: 
     {
-      if(btFlag)
-      {
-        CR1_ulFlagTimerNow = millis();
-        if(CR1_ulFlagTimerNow - CR1_ulFlagTimerPrevious >= CR1_ciFlagTimer)
-        {
-
-          CR1_ulFlagTimerPrevious = CR1_ulFlagTimerNow;
-          switch(ucFlagStateIndex)
-          {
-    //###############################################################################
-            case 0:
-            {
-              CR1_in8FlagCounter = CR1_in8FlagCounter + 1;
-              ledcWrite(ciServoChannel, DegreesToDutyCycle(0));
-              ucFlagStateIndex = 1;
-              break;
-            }
-    //###############################################################################
-            case 1:
-            {
-              ledcWrite(ciServoChannel, DegreesToDutyCycle(90));
-              ucFlagStateIndex = 2;
-              break;
-            }
-    //###############################################################################
-            case 2:
-            {
-              ledcWrite(ciServoChannel, DegreesToDutyCycle(180));
-              ucFlagStateIndex = 3;
-              break;
-            }
-    //###############################################################################
-            case 3:
-            {
-              ledcWrite(ciServoChannel, DegreesToDutyCycle(90));
-              if(CR1_in8FlagCounter >= 3)
-              {
-                btFlag = false;
-              }
-              ucFlagStateIndex = 0;
-              break;
-            }
-    //###############################################################################
-          }
-          
-        }
-      }
-    
+//      if(btFlag)
+//      {
+//        CR1_ulFlagTimerNow = millis();
+//        if(CR1_ulFlagTimerNow - CR1_ulFlagTimerPrevious >= CR1_ciFlagTimer)
+//        {
+//
+//          CR1_ulFlagTimerPrevious = CR1_ulFlagTimerNow;
+//          switch(ucFlagStateIndex)
+//          {
+//    //###############################################################################
+//            case 0:
+//            {
+//              CR1_in8FlagCounter = CR1_in8FlagCounter + 1;
+//              ledcWrite(ciServoChannel, DegreesToDutyCycle(0));
+//              ucFlagStateIndex = 1;
+//              break;
+//            }
+//    //###############################################################################
+//            case 1:
+//            {
+//              ledcWrite(ciServoChannel, DegreesToDutyCycle(90));
+//              ucFlagStateIndex = 2;
+//              break;
+//            }
+//    //###############################################################################
+//            case 2:
+//            {
+//              ledcWrite(ciServoChannel, DegreesToDutyCycle(180));
+//              ucFlagStateIndex = 3;
+//              break;
+//            }
+//    //###############################################################################
+//            case 3:
+//            {
+//              ledcWrite(ciServoChannel, DegreesToDutyCycle(90));
+//              if(CR1_in8FlagCounter >= 3)
+//              {
+//                btFlag = false;
+//              }
+//              ucFlagStateIndex = 0;
+//              break;
+//            }
+//    //###############################################################################
+//          }
+//          
+//        }
+//      }
+//    
       CR1_ucMainTimerCaseCore1 = 9;
       break;
     }
