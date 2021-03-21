@@ -63,6 +63,8 @@ void incrementStepper() {
       ledcWrite(1,255);  //stop with braking Left motor 
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor 
+
+      ucNextMotorStateIndex = 2
      
   }
 

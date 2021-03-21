@@ -285,7 +285,7 @@ void loop()
           }
            case 1:
           {
-            ucMotorState = 1;  //reverse
+            ucMotorState = 1;  //forward
             ENC_SetDistance(200, 200);
             CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
             CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
@@ -303,13 +303,11 @@ void loop()
           {
             
 
-            ENC_SetDistance(ci8RightTurn,-(ci8RightTurn));
-            CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
-            CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
-            ucMotorState = 3;  //right
+            ucMotorState = 0;
+            move(0); // used to be 0
             
             ucMotorStateIndex = 0;
-            ucNextMotorStateIndex = 3;
+            ucNextMotorStateIndex = 2;
             break;
           }
           case 3:
@@ -433,7 +431,7 @@ void loop()
       //read pot 1 for motor speeds 
       CR1_ui8WheelSpeed = map(analogRead(ciPot1), 0, 4096, 130, 255);  // adjust to range that will produce motion
       CR1_inPot2Value = analogRead(ciPot2);
-      CR1_ui8WheelSpeedAdjustmentFactor =  map(analogRead(ciPot2), 0, 4096, 0, 20);
+      CR1_ui8WheelSpeedAdjustmentFactor = 0 //map(analogRead(ciPot2), 0, 4096, 0, 20);
       
       CR1_ucMainTimerCaseCore1 = 3;
       break;

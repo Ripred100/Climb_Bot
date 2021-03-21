@@ -88,7 +88,6 @@ usage
 ////
 //#define WATCH_VARIABLE_15_NAME "LOC_btLookingForBeaconFlag"
 //#define WATCH_VARIABLE_15_TYPE volatile boolean
-//#define WATCH_VARIABLE_15 LOC_btLookingForBeaconFlag
 ////
 //
 //#define WATCH_VARIABLE_16_NAME "ENC_vi32LeftEncoderBRawTime"
