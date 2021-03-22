@@ -42,17 +42,17 @@ void setupMotion (void)
   dRightSpeed = 170;
   
   //setup PWM for motors
-  ledcAttachPin(ciMotorLeftA, 1); // assign Motors pins to channels
-  ledcAttachPin(ciMotorLeftB, 2);
-  ledcAttachPin(ciMotorRightA, 3);
+  ledcAttachPin(ciMotorLeftA, 7); // assign Motors pins to channels
+  ledcAttachPin(ciMotorLeftB, 6);
+  ledcAttachPin(ciMotorRightA, 5);
   ledcAttachPin(ciMotorRightB, 4);
 
   // Initialize channels 
   // channels 0-15, resolution 1-16 bits, freq limits depend on resolution
   // ledcSetup(uint8_t channel, uint32_t freq, uint8_t resolution_bits);
-  ledcSetup(1, 20000, 8); // 20mS PWM, 8-bit resolution
-  ledcSetup(2, 20000, 8);
-  ledcSetup(3, 20000, 8);
+  ledcSetup(7, 20000, 8); // 20mS PWM, 8-bit resolution
+  ledcSetup(6, 20000, 8);
+  ledcSetup(5, 20000, 8);
   ledcSetup(4, 20000, 8);
  	
    ucMotion_Direction = 0;
@@ -121,10 +121,10 @@ void MoveTo(uint8_t ui8Direction, uint8_t ui8LeftSpeed, uint8_t ui8RightSpeed)
             ui8RightWorkingSpeed = ui8RightWorkingSpeed + ACCELERATIONRATE;
           }
           
-          ledcWrite(2,0);
-          ledcWrite(1,ui8LeftWorkingSpeed);
+          ledcWrite(6,0);
+          ledcWrite(7,ui8LeftWorkingSpeed);
           ledcWrite(4,0);
-          ledcWrite(3,ui8RightWorkingSpeed);
+          ledcWrite(5,ui8RightWorkingSpeed);
           
           break;
         }
@@ -148,10 +148,10 @@ void MoveTo(uint8_t ui8Direction, uint8_t ui8LeftSpeed, uint8_t ui8RightSpeed)
             ui8RightWorkingSpeed = ui8RightWorkingSpeed + ACCELERATIONRATE;
           }
          
-          ledcWrite(1,0);
-          ledcWrite(2,ui8LeftWorkingSpeed);
+          ledcWrite(7,0);
+          ledcWrite(6,ui8LeftWorkingSpeed);
           ledcWrite(4,0);
-          ledcWrite(3,ui8RightWorkingSpeed);
+          ledcWrite(5,ui8RightWorkingSpeed);
         
           break;
         }
@@ -175,9 +175,9 @@ void MoveTo(uint8_t ui8Direction, uint8_t ui8LeftSpeed, uint8_t ui8RightSpeed)
             ui8RightWorkingSpeed = ui8RightWorkingSpeed + ACCELERATIONRATE;
           }
          
-          ledcWrite(2,0);
-          ledcWrite(1,ui8LeftWorkingSpeed);
-          ledcWrite(3,0);
+          ledcWrite(6,0);
+          ledcWrite(7,ui8LeftWorkingSpeed);
+          ledcWrite(5,0);
           ledcWrite(4,ui8RightWorkingSpeed);
        
           break;
@@ -203,9 +203,9 @@ void MoveTo(uint8_t ui8Direction, uint8_t ui8LeftSpeed, uint8_t ui8RightSpeed)
             ui8RightWorkingSpeed = ui8RightWorkingSpeed + ACCELERATIONRATE;
           }
          
-          ledcWrite(1,0);
-          ledcWrite(2,ui8LeftWorkingSpeed);
-          ledcWrite(3,0);
+          ledcWrite(7,0);
+          ledcWrite(6,ui8LeftWorkingSpeed);
+          ledcWrite(5,0);
           ledcWrite(4,ui8RightWorkingSpeed);
        
           break;
@@ -225,10 +225,10 @@ void move(uint8_t ui8Speed)
         case 0:
         {
           //if 0 is put in both INs motors will coast stop 
-          ledcWrite(2,0);
-          ledcWrite(1,0);
+          ledcWrite(6,0);
+          ledcWrite(7,0);
           ledcWrite(4,0);
-          ledcWrite(3,0);
+          ledcWrite(5,0);
         //ucWorkingButtonState = 9;
       #ifdef DEBUGPRINT  
           if(iPrintOnce != 0)
@@ -245,10 +245,10 @@ void move(uint8_t ui8Speed)
         case 1:
         {
           //ui8speed = dForwardSpeed;
-          ledcWrite(2,0);
-          ledcWrite(1,ui8Speed);
+          ledcWrite(6,0);
+          ledcWrite(7,ui8Speed);
           ledcWrite(4,0);
-          ledcWrite(3,ui8Speed);
+          ledcWrite(5,ui8Speed);
           //ucWorkingButtonState = 9;
         #ifdef DEBUGPRINT  
           if(iPrintOnce != 1)
@@ -264,9 +264,9 @@ void move(uint8_t ui8Speed)
         case 2:
         {
           ui8Speed = dLeftSpeed;
-          ledcWrite(2,0);
-          ledcWrite(1,ui8Speed);
-          ledcWrite(3,0);
+          ledcWrite(6,0);
+          ledcWrite(7,ui8Speed);
+          ledcWrite(5,0);
           ledcWrite(4,ui8Speed);
          //ucWorkingButtonState = 9;
          #ifdef DEBUGPRINT  
@@ -283,10 +283,10 @@ void move(uint8_t ui8Speed)
         case 3:
         {
           ui8Speed = dRightSpeed;
-          ledcWrite(1,0);
-          ledcWrite(2,ui8Speed);
+          ledcWrite(7,0);
+          ledcWrite(6,ui8Speed);
           ledcWrite(4,0);
-          ledcWrite(3,ui8Speed);
+          ledcWrite(5,ui8Speed);
           // ucWorkingButtonState = 9;
           #ifdef DEBUGPRINT  
           if(iPrintOnce != 4)
@@ -302,9 +302,9 @@ void move(uint8_t ui8Speed)
         case 4:
         {
           // ui8speed = dReverseSpeed;
-          ledcWrite(1,0);
-          ledcWrite(2,ui8Speed);
-          ledcWrite(3,0);
+          ledcWrite(7,0);
+          ledcWrite(6,ui8Speed);
+          ledcWrite(5,0);
           ledcWrite(4,ui8Speed);
          // ucWorkingButtonState = 9;
          #ifdef DEBUGPRINT  
@@ -321,10 +321,10 @@ void move(uint8_t ui8Speed)
         case 5:
         {
           //if 255 is put in both INs brakes will be applied 
-          ledcWrite(2,255);
-          ledcWrite(1,255);
+          ledcWrite(6,255);
+          ledcWrite(7,255);
           ledcWrite(4,255);
-          ledcWrite(3,255);
+          ledcWrite(5,255);
         //ucWorkingButtonState = 9;
       #ifdef DEBUGPRINT  
           if(iPrintOnce != 0)

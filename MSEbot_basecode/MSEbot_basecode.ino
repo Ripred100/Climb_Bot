@@ -279,7 +279,7 @@ void loop()
            case 1:
           {
             ucMotorState = 1;  //forward
-            ENC_SetDistance(200, 200);
+            ENC_SetDistance(500, 500);
             CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
             CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
             SmartLEDs.setPixelColor(0,0,0,25);

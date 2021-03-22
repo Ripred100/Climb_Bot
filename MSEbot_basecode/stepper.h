@@ -18,10 +18,10 @@ const int LimitSwitchRight = 27;
  
 void setupStepper() {
   // Allow allocation of all timers
-  ESP32PWM::allocateTimer(6);
-  ESP32PWM::allocateTimer(7);
-  ESP32PWM::allocateTimer(8);
-  ESP32PWM::allocateTimer(9);
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
   
   topServo.setPeriodHertz(50);    // standard 50 hz servo
   topServo.attach(servoTop, 500, 2400); // attaches the servo on pin 18 to the servo object
@@ -59,9 +59,9 @@ void incrementStepper() {
       digitalWrite(ciMotorLeftB,HIGH);
       digitalWrite(ciMotorRightA,HIGH);
       digitalWrite(ciMotorRightB,HIGH);
-      ledcWrite(2,255);
-      ledcWrite(1,255);  //stop with braking Left motor 
-      ledcWrite(3,255);
+      ledcWrite(6,255);
+      ledcWrite(7,255);  //stop with braking Left motor 
+      ledcWrite(5,255);
       ledcWrite(4,255);  //stop with braking Right motor 
 
       ucNextMotorStateIndex = 2;
