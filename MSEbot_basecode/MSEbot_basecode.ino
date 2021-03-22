@@ -74,7 +74,6 @@ const uint8_t ci8LeftTurn = 26;
 
 volatile int LOC_ciLastTurnDirection = 2;
 
-uint8_t CR1_ui8IRDatum;
 uint8_t CR1_ui8WheelSpeed;
 uint8_t CR1_ui8WheelSpeedAdjustmentFactor;
 uint8_t CR1_ui8LeftWheelSpeed;
@@ -141,7 +140,7 @@ boolean btToggle = true;
 int iButtonState;
 int iLastButtonState = HIGH;
 
-#include "stepper.h"
+
 
 // Declare our SK6812 SMART LED object:
 Adafruit_NeoPixel SmartLEDs(2, 25, NEO_GRB + NEO_KHZ400);
@@ -153,6 +152,8 @@ Adafruit_NeoPixel SmartLEDs(2, 25, NEO_GRB + NEO_KHZ400);
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
+
+#include "stepper.h"
 
 void setup() {
    Serial.begin(115200); 
@@ -242,18 +243,7 @@ void loop()
 
  }
  
- if (Serial2.available() > 0) {               // check for incoming data
-    CR1_ui8IRDatum = Serial2.read();          // read the incoming byte
-// Serial.println(iIncomingByte, HEX);        // uncomment to output received character
-    CR1_ulLastByteTime = millis();            // capture time last byte was received
- }
- else
- {
-    // check to see if elapsed time exceeds allowable timeout
-    if (millis() - CR1_ulLastByteTime > CR1_clReadTimeout) {
-      CR1_ui8IRDatum = 0;                     // if so, clear incoming byte
-    }
- }
+
  CR1_ulMainTimerNow = micros();
  if(CR1_ulMainTimerNow - CR1_ulMainTimerPrevious >= CR1_ciMainTimer)
  {
@@ -280,6 +270,9 @@ void loop()
           {
             ucMotorStateIndex = ucNextMotorStateIndex;
             ucMotorState = 0;
+                                      // otherwise
+         SmartLEDs.setPixelColor(0,25,0,0);         // make LED1 red with 10% intensity
+
             move(0); // used to be 0
             break;
           }
@@ -289,6 +282,7 @@ void loop()
             ENC_SetDistance(200, 200);
             CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
             CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
+            SmartLEDs.setPixelColor(0,0,0,25);
 
             
             
@@ -302,7 +296,7 @@ void loop()
            case 2:
           {
             
-
+            SmartLEDs.setPixelColor(0,25,0,25);
             ucMotorState = 0;
             move(0); // used to be 0
             
@@ -344,10 +338,7 @@ void loop()
           case 6:
           {
 
-            ENC_SetDistance(-(ci8LeftTurn),ci8LeftTurn);
-            CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
-            CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
-            ucMotorState = 2;  //left  
+
             
             ucMotorStateIndex = 0;
             ucNextMotorStateIndex = 11;
@@ -355,23 +346,15 @@ void loop()
           }
            case 7:
           {// Flag wave case starts here
-            ucMotorStateIndex = 8;
-            ucMotorState = 4;  //reverse
-            ENC_SetDistance(-300, -300);
-            CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
-            CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
             
+            ucMotorStateIndex = 8;
+
+    
             break;
           }
           case 8:
           {
-            ENC_SetDistance(2*ci8RightTurn,-(2*ci8RightTurn));
-            CR1_ui8LeftWheelSpeed = CR1_ui8WheelSpeed;
-            CR1_ui8RightWheelSpeed = CR1_ui8WheelSpeed;
-            ucMotorState = 3;
 
-          
-            
             ucMotorStateIndex = 9;
             break;
           }
@@ -431,7 +414,7 @@ void loop()
       //read pot 1 for motor speeds 
       CR1_ui8WheelSpeed = map(analogRead(ciPot1), 0, 4096, 130, 255);  // adjust to range that will produce motion
       CR1_inPot2Value = analogRead(ciPot2);
-      CR1_ui8WheelSpeedAdjustmentFactor = 0 //map(analogRead(ciPot2), 0, 4096, 0, 20);
+      CR1_ui8WheelSpeedAdjustmentFactor = 0; //map(analogRead(ciPot2), 0, 4096, 0, 20);
       
       CR1_ucMainTimerCaseCore1 = 3;
       break;
@@ -478,16 +461,7 @@ void loop()
     //###############################################################################
     case 7: 
     {
-       if (CR1_ui8IRDatum == 0x55) {                // if proper character is seen
-         SmartLEDs.setPixelColor(0,0,25,0);         // make LED1 green with 10% intensity
-       }
-       else if (CR1_ui8IRDatum == 0x41) {           // if "hit" character is seen
-         SmartLEDs.setPixelColor(0,25,0,25);        // make LED1 purple with 10% intensity
-         
-       }
-       else {                                       // otherwise
-         SmartLEDs.setPixelColor(0,25,0,0);         // make LED1 red with 10% intensity
-       }
+
        SmartLEDs.show();                            // send updated colour to LEDs
           
       CR1_ucMainTimerCaseCore1 = 8;

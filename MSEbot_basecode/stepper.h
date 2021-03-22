@@ -14,14 +14,14 @@ int LeftState = 0;
 int RightState = 0;
 
 const int LimitSwitchLeft = 16;
-const int LimitSwitchRight = 4;
+const int LimitSwitchRight = 27;
  
 void setupStepper() {
   // Allow allocation of all timers
-  ESP32PWM::allocateTimer(0);
-  ESP32PWM::allocateTimer(1);
-  ESP32PWM::allocateTimer(2);
-  ESP32PWM::allocateTimer(3);
+  ESP32PWM::allocateTimer(6);
+  ESP32PWM::allocateTimer(7);
+  ESP32PWM::allocateTimer(8);
+  ESP32PWM::allocateTimer(9);
   
   topServo.setPeriodHertz(50);    // standard 50 hz servo
   topServo.attach(servoTop, 500, 2400); // attaches the servo on pin 18 to the servo object
@@ -64,12 +64,13 @@ void incrementStepper() {
       ledcWrite(3,255);
       ledcWrite(4,255);  //stop with braking Right motor 
 
-      ucNextMotorStateIndex = 2
+      ucNextMotorStateIndex = 2;
      
   }
 
   if((topPos >= 180 && bottomPos <= 0)){
     ucNextMotorStateIndex = 0;
+    SmartLEDs.setPixelColor(0,15,15,0);
   }
 }
 
